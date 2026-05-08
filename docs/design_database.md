@@ -22,20 +22,25 @@ Transaction（所有钱的流动） 核心
 ## 1、items（统一入口）
 
 ```sql
-CREATE TABLE items (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_items (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
   name VARCHAR(255) NOT NULL,
   type ENUM('service', 'asset', 'account') NOT NULL,
 
-  category_id BIGINT,
+  category_id BIGINT UNSIGNED NULL,
   platform VARCHAR(100),
 
   notes TEXT,
 
-  created_at DATETIME,
-  updated_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  KEY idx_items_type (type),
+  KEY idx_items_category_id (category_id),
+  KEY idx_items_platform (platform)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 👉 一切的起点（Netflix / MacBook / ChatGPT账号）
@@ -43,14 +48,14 @@ CREATE TABLE items (
 ## 2、plans（计费方式）
 
 ```sql
-CREATE TABLE plans (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_plans (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  item_id BIGINT NOT NULL,
+  item_id BIGINT UNSIGNED NOT NULL,
 
   type ENUM('one_time', 'recurring') NOT NULL,
 
-  currency VARCHAR(10),
+  currency CHAR(3) NOT NULL DEFAULT 'CNY',
 
   -- 一次性
   one_time_price DECIMAL(10,2),
@@ -63,37 +68,49 @@ CREATE TABLE plans (
   start_date DATE,
   end_date DATE,
 
-  default_payment_method_id BIGINT,
+  default_payment_method_id BIGINT UNSIGNED,
 
-  created_at DATETIME,
-  updated_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  KEY idx_plans_item_id (item_id),
+  KEY idx_plans_type (type),
+  KEY idx_plans_default_payment_method_id (default_payment_method_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 3、transactions（资金流水核心）
 
 ```sql
-CREATE TABLE transactions (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_transactions (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  item_id BIGINT,
-  plan_id BIGINT,
+  item_id BIGINT UNSIGNED,
+  plan_id BIGINT UNSIGNED,
 
   amount DECIMAL(12,2) NOT NULL,
-  currency VARCHAR(10),
+  currency CHAR(3) NOT NULL DEFAULT 'CNY',
 
-  type ENUM('expense', 'income', 'refund', 'transfer'),
+  type ENUM('expense', 'income', 'refund', 'transfer') NOT NULL,
 
-  payment_method_id BIGINT,
+  payment_method_id BIGINT UNSIGNED,
 
-  transaction_date DATETIME,
+  transaction_date DATETIME NOT NULL,
 
-  status ENUM('pending', 'success', 'failed'),
+  status ENUM('pending', 'success', 'failed') NOT NULL DEFAULT 'success',
 
   notes TEXT,
 
-  created_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  KEY idx_transactions_item_id (item_id),
+  KEY idx_transactions_plan_id (plan_id),
+  KEY idx_transactions_payment_method_id (payment_method_id),
+  KEY idx_transactions_transaction_date (transaction_date),
+  KEY idx_transactions_type_status (type, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 👉 **未来所有记账功能都靠它**
@@ -101,11 +118,11 @@ CREATE TABLE transactions (
 ## 4、payment_methods（支付方式 / 信用卡）
 
 ```sql
-CREATE TABLE payment_methods (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_payment_methods (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  name VARCHAR(100),
-  type ENUM('credit_card', 'debit_card', 'paypal', 'cash', 'bank'),
+  name VARCHAR(100) NOT NULL,
+  type ENUM('credit_card', 'debit_card', 'paypal', 'cash', 'bank') NOT NULL,
 
   provider VARCHAR(100),
   last4 VARCHAR(10),
@@ -115,47 +132,59 @@ CREATE TABLE payment_methods (
 
   credit_limit DECIMAL(12,2),
 
-  currency VARCHAR(10),
+  currency CHAR(3) NOT NULL DEFAULT 'CNY',
 
-  is_active BOOLEAN DEFAULT TRUE,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
 
-  created_at DATETIME,
-  updated_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  KEY idx_payment_methods_type (type),
+  KEY idx_payment_methods_is_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 5、assets（实物资产）
 
 ```sql
-CREATE TABLE assets (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_assets (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  item_id BIGINT NOT NULL,
+  item_id BIGINT UNSIGNED NOT NULL,
 
-  quantity INT DEFAULT 1,
+  quantity INT UNSIGNED NOT NULL DEFAULT 1,
 
   purchase_price DECIMAL(12,2),
   purchase_date DATE,
 
   current_value DECIMAL(12,2),
 
-  status ENUM('active', 'sold', 'lost'),
+  status ENUM('active', 'sold', 'lost') NOT NULL DEFAULT 'active',
 
   location VARCHAR(255),
 
-  created_at DATETIME,
-  updated_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_assets_item_id (item_id),
+  KEY idx_assets_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 6、categories（分类）
 
 ```sql
-CREATE TABLE categories (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_categories (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   name VARCHAR(100) NOT NULL,
-  parent_id BIGINT
-);
+  parent_id BIGINT UNSIGNED,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_categories_name (name),
+  KEY idx_categories_parent_id (parent_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 👉 支持层级（娱乐 / 工具 / 数码）
@@ -163,24 +192,30 @@ CREATE TABLE categories (
 ## 7、tags（标签系统，强烈推荐）
 
 ```sql
-CREATE TABLE tags (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(50)
-);
+CREATE TABLE IF NOT EXISTS fa_asset_tags (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(50) NOT NULL,
 
-CREATE TABLE item_tags (
-  item_id BIGINT,
-  tag_id BIGINT
-);
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_tags_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS fa_asset_item_tags (
+  item_id BIGINT UNSIGNED NOT NULL,
+  tag_id BIGINT UNSIGNED NOT NULL,
+
+  PRIMARY KEY (item_id, tag_id),
+  KEY idx_item_tags_tag_id (tag_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 8、accounts（账号管理，扩展模块）
 
 ```sql
-CREATE TABLE accounts (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_accounts (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  item_id BIGINT,
+  item_id BIGINT UNSIGNED,
 
   username VARCHAR(255),
   email VARCHAR(255),
@@ -189,8 +224,12 @@ CREATE TABLE accounts (
 
   notes TEXT,
 
-  created_at DATETIME
-);
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_accounts_item_id (item_id),
+  KEY idx_accounts_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 👉 未来你可以接：
@@ -201,10 +240,10 @@ CREATE TABLE accounts (
 ## 9、credit_card_bills（信用卡账单，进阶）
 
 ```sql
-CREATE TABLE credit_card_bills (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_credit_card_bills (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  payment_method_id BIGINT,
+  payment_method_id BIGINT UNSIGNED NOT NULL,
 
   period_start DATE,
   period_end DATE,
@@ -213,23 +252,33 @@ CREATE TABLE credit_card_bills (
 
   total_amount DECIMAL(12,2),
 
-  is_paid BOOLEAN DEFAULT FALSE
-);
+  is_paid TINYINT(1) NOT NULL DEFAULT 0,
+
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_credit_card_bills_period (payment_method_id, period_start, period_end),
+  KEY idx_credit_card_bills_due_date (due_date),
+  KEY idx_credit_card_bills_is_paid (is_paid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 10、transfers（账户间转账，可选）
 
 ```sql
-CREATE TABLE transfers (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS fa_asset_transfers (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
-  from_payment_method_id BIGINT,
-  to_payment_method_id BIGINT,
+  from_payment_method_id BIGINT UNSIGNED NOT NULL,
+  to_payment_method_id BIGINT UNSIGNED NOT NULL,
 
-  amount DECIMAL(12,2),
+  amount DECIMAL(12,2) NOT NULL,
 
-  transaction_date DATETIME
-);
+  transaction_date DATETIME NOT NULL,
+
+  PRIMARY KEY (id),
+  KEY idx_transfers_from_payment_method_id (from_payment_method_id),
+  KEY idx_transfers_to_payment_method_id (to_payment_method_id),
+  KEY idx_transfers_transaction_date (transaction_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
 ## 🔗 三、核心关系总结（非常重要）
