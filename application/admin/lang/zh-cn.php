@@ -221,4 +221,16 @@ return [
     'User Module'                                           => '会员模块',
     'Register'                                              => '注册',
     'User Center'                                           => '会员中心',
+    // 资产管理-通用
+    "Active"                                                => "启用",
+    "Inactive"                                              => "禁用",
+    "Please input"                                          => "请输入",
+    "Day"                                                   => "日",
+    // 资产管理
+    "Created_at"                                            => "创建时间",
+    "Updated_at"                                            => "更新时间",
+    "Credit_card"                                           => "信用卡",
+    "Debit_card"                                            => "借记卡",
+    "Cash"                                                  => "现金",
+    "Bank"                                                  => "网上银行",
 ];

@@ -26,10 +26,10 @@ CREATE TABLE IF NOT EXISTS fa_asset_items (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
   name VARCHAR(255) NOT NULL,
+  cover_url VARCHAR(255),
   type ENUM('service', 'asset', 'account') NOT NULL,
 
   category_id BIGINT UNSIGNED NULL,
-  platform VARCHAR(100),
 
   notes TEXT,
 
@@ -38,8 +38,7 @@ CREATE TABLE IF NOT EXISTS fa_asset_items (
 
   PRIMARY KEY (id),
   KEY idx_items_type (type),
-  KEY idx_items_category_id (category_id),
-  KEY idx_items_platform (platform)
+  KEY idx_items_category_id (category_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 ```
 
@@ -122,15 +121,13 @@ CREATE TABLE IF NOT EXISTS fa_asset_payment_methods (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
 
   name VARCHAR(100) NOT NULL,
-  type ENUM('credit_card', 'debit_card', 'paypal', 'cash', 'bank') NOT NULL,
+  type ENUM('credit_card', 'debit_card', 'cash', 'bank') NOT NULL,
 
-  provider VARCHAR(100),
-  last4 VARCHAR(10),
+  provider VARCHAR(100) COMMENT '服务组织',
 
-  billing_day INT,
-  due_day INT,
-
-  credit_limit DECIMAL(12,2),
+  billing_day INT COMMENT '账单日',
+  due_day INT COMMENT '还款日',
+  credit_limit DECIMAL(12,2) COMMENT '信用额度',
 
   currency CHAR(3) NOT NULL DEFAULT 'CNY',
 

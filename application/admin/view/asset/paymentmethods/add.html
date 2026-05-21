@@ -1,0 +1,70 @@
+<form id="add-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-name" data-rule="required" class="form-control" name="row[name]" type="text" placeholder="{:__('Please input')}{:__('Name')}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select  id="c-type" data-rule="required" class="form-control selectpicker" name="row[type]">
+                {foreach name="typeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="bank"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Provider')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-provider" class="form-control selectpicker" name="row[provider]">
+                {foreach name="providerList" item="vo"}
+                    <option value="{$vo}" {in name="vo" value="Visa"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="form-group credit-card-only">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Billing_day')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-billing_day" class="form-control" name="row[billing_day]" type="number">
+        </div>
+    </div>
+    <div class="form-group credit-card-only">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Due_day')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-due_day" class="form-control" name="row[due_day]" type="number">
+        </div>
+    </div>
+    <div class="form-group credit-card-only">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Credit_limit')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-credit_limit" class="form-control" step="0.01" name="row[credit_limit]" type="number">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Currency')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <select id="c-currency" data-rule="required" class="form-control selectpicker" name="row[currency]">
+                {foreach name="currencyList" item="vo"}
+                    <option value="{$vo}" {in name="vo" value="CNY"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Is_active')}:</label>
+        <div class="col-xs-12 col-sm-8">
+             {:build_radios('row[is_active]', ['1'=>__('Active'), '0'=>__('Inactive')], '1')}
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-primary btn-embossed disabled">{:__('OK')}</button>
+        </div>
+    </div>
+</form>
