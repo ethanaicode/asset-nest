@@ -233,4 +233,5 @@ return [
     "Debit_card"                                            => "借记卡",
     "Cash"                                                  => "现金",
     "Bank"                                                  => "网上银行",
+    "Currency" => "货币",
 ];
