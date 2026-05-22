@@ -1,7 +1,6 @@
 <?php
 
 return [
-    "Item_id" => "资产",
     "Purchase_date" => "购买日期",
     "One_time_price" => "单次费用",
     "Recurring_price" => "订阅费用",

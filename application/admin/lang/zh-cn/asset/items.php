@@ -7,5 +7,4 @@ return [
     "Service" => "软件服务",
     "Asset" => "实物资产",
     "Account" => "账户",
-    "Notes" => "备注",
 ];
