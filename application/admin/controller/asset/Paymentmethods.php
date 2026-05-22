@@ -24,11 +24,9 @@ class Paymentmethods extends Backend
         $this->model = new \app\admin\model\asset\Paymentmethods;
         $this->view->assign("typeList", $this->model->getTypeList());
         // 定义服务组织列表，方便在表单中选择
-        $providerList = ['UnionPay', 'Visa', 'MasterCard', 'American Express', 'Discover', 'JCB', 'PayPal', 'Stripe', 'Square', 'Adyen', 'Other'];
-        $this->view->assign("providerList", $providerList);
+        $this->view->assign("providerList", config('asset.provider'));
         // 定义常用的货币列表，方便在表单中选择
-        $currencyList = ['CNY', 'USD', 'EUR', 'GBP', 'CAD', 'JPY', 'SGD', 'AUD'];
-        $this->view->assign("currencyList", $currencyList);
+        $this->view->assign("currencyList", config('asset.currency'));
     }
 
 

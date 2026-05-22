@@ -36,5 +36,13 @@ class Items extends Backend
      * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
      */
 
-
+    /**
+     * Selectpage搜索
+     *
+     * @internal
+     */
+    public function selectpage()
+    {
+        return parent::selectpage();
+    }
 }

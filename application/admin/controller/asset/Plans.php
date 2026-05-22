@@ -24,6 +24,8 @@ class Plans extends Backend
         $this->model = new \app\admin\model\asset\Plans;
         $this->view->assign("typeList", $this->model->getTypeList());
         $this->view->assign("billingCycleList", $this->model->getBillingCycleList());
+        // 定义常用的货币列表，方便在表单中选择
+        $this->view->assign("currencyList", config('asset.currency'));
     }
 
 
