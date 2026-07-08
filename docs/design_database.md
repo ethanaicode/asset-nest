@@ -52,9 +52,9 @@ CREATE TABLE IF NOT EXISTS fa_asset_plans (
 
   item_id BIGINT UNSIGNED NOT NULL,
 
-  type ENUM('one_time', 'recurring') NOT NULL,
-
   currency CHAR(3) NOT NULL DEFAULT 'CNY',
+
+  type ENUM('one_time', 'recurring') NOT NULL,
 
   -- 一次性
   one_time_price DECIMAL(10,2),
@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS fa_asset_plans (
   -- 订阅
   recurring_price DECIMAL(10,2),
   billing_cycle ENUM('monthly', 'yearly'),
+  -- 账单日（每月几号扣费，仅当 billing_cycle = monthly 时有效）
   billing_day INT,
   start_date DATE,
   end_date DATE,
