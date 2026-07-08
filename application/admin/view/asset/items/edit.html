@@ -1,5 +1,17 @@
 <form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
     <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Type')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-type" data-rule="required" class="form-control selectpicker" name="row[type]">
+                {foreach name="typeList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.type"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Category_id')}:</label>
         <div class="col-xs-12 col-sm-8">
             <input id="c-category_id" min="0" data-rule="required" data-source="asset/categories/selectpage" class="form-control selectpage" name="row[category_id]" type="text" value="{$row.category_id|htmlentities}">
@@ -23,18 +35,6 @@
                 <span class="msg-box n-right" for="c-cover_url"></span>
             </div>
             <ul class="row list-inline faupload-preview" id="p-cover_url"></ul>
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Type')}:</label>
-        <div class="col-xs-12 col-sm-8">
-                        
-            <select  id="c-type" data-rule="required" class="form-control selectpicker" name="row[type]">
-                {foreach name="typeList" item="vo"}
-                    <option value="{$key}" {in name="key" value="$row.type"}selected{/in}>{$vo}</option>
-                {/foreach}
-            </select>
-
         </div>
     </div>
     <div class="form-group">
