@@ -12,6 +12,10 @@ use app\common\controller\Backend;
 class Plans extends Backend
 {
 
+    // 开启验证器并按场景(add/edit)验证
+    protected $modelValidate = true;
+    protected $modelSceneValidate = true;
+
     /**
      * Plans模型对象
      * @var \app\admin\model\asset\Plans

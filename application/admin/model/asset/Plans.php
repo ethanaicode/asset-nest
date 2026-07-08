@@ -28,6 +28,16 @@ class Plans extends Model
         'type_text',
         'billing_cycle_text'
     ];
+
+    protected static function init()
+    {
+        self::beforeInsert(function ($row) {
+            self::normalizePlanFields($row);
+        });
+        self::beforeUpdate(function ($row) {
+            self::normalizePlanFields($row);
+        });
+    }
     
 
     
@@ -55,6 +65,29 @@ class Plans extends Model
         $value = $value ?: ($data['billing_cycle'] ?? '');
         $list = $this->getBillingCycleList();
         return $list[$value] ?? '';
+    }
+
+    protected static function normalizePlanFields($row)
+    {
+        $type = (string)$row->getAttr('type');
+        $billingCycle = (string)$row->getAttr('billing_cycle');
+
+        if ($type === 'one_time') {
+            $row->setAttr('recurring_price', null);
+            $row->setAttr('billing_cycle', null);
+            $row->setAttr('billing_day', null);
+            $row->setAttr('start_date', null);
+            $row->setAttr('end_date', null);
+            return;
+        }
+
+        if ($type === 'recurring') {
+            $row->setAttr('one_time_price', null);
+            $row->setAttr('purchase_date', null);
+            if ($billingCycle !== 'monthly') {
+                $row->setAttr('billing_day', null);
+            }
+        }
     }
 
 

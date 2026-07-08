@@ -57,7 +57,78 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
         },
         api: {
             bindevent: function () {
-                Form.api.bindevent($("form[role=form]"));
+                var form = $("form[role=form]");
+                Form.api.bindevent(form);
+                Controller.api.bindPlanForm(form);
+            },
+            bindPlanForm: function (form) {
+                var typeInput = form.find("#c-type");
+                var cycleInput = form.find("#c-billing_cycle");
+
+                var fields = {
+                    one_time_price: form.find('[data-plan-field="one_time_price"]'),
+                    purchase_date: form.find('[data-plan-field="purchase_date"]'),
+                    recurring_price: form.find('[data-plan-field="recurring_price"]'),
+                    billing_cycle: form.find('[data-plan-field="billing_cycle"]'),
+                    billing_day: form.find('[data-plan-field="billing_day"]'),
+                    start_date: form.find('[data-plan-field="start_date"]'),
+                    end_date: form.find('[data-plan-field="end_date"]')
+                };
+
+                var toggleField = function (group, required) {
+                    if (!group || !group.length) {
+                        return;
+                    }
+                    var controls = group.find("input,select,textarea");
+                    group.toggle(required);
+                    controls.prop("disabled", !group.is(":visible"));
+                    if (required) {
+                        controls.attr("data-rule", "required");
+                    } else {
+                        controls.removeAttr("data-rule");
+                    }
+                    var picker = controls.filter(".selectpicker");
+                    if (picker.length && $.isFunction(picker.selectpicker)) {
+                        picker.selectpicker("refresh");
+                    }
+                };
+
+                var getTypeValue = function () {
+                    var value = typeInput.val();
+                    if (value !== "one_time" && value !== "recurring") {
+                        value = "one_time";
+                    }
+                    return value;
+                };
+
+                var getCycleValue = function () {
+                    var value = cycleInput.val();
+                    if (value !== "monthly" && value !== "yearly") {
+                        value = "monthly";
+                    }
+                    return value;
+                };
+
+                var updateFields = function () {
+                    var type = getTypeValue();
+                    var cycle = getCycleValue();
+                    var isOneTime = type === "one_time";
+                    var isRecurring = type === "recurring";
+                    var isMonthlyRecurring = isRecurring && cycle === "monthly";
+
+                    toggleField(fields.one_time_price, isOneTime);
+                    toggleField(fields.purchase_date, isOneTime);
+                    toggleField(fields.recurring_price, isRecurring);
+                    toggleField(fields.billing_cycle, isRecurring);
+                    toggleField(fields.billing_day, isMonthlyRecurring);
+                    toggleField(fields.start_date, isRecurring);
+                    toggleField(fields.end_date, isRecurring);
+                };
+
+                typeInput.on("change changed.bs.select", updateFields);
+                cycleInput.on("change changed.bs.select", updateFields);
+                updateFields();
+                setTimeout(updateFields, 0);
             }
         }
     };
