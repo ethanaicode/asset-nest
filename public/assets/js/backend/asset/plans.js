@@ -28,7 +28,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'item_id', title: __('Item_id')},
+                        {field: 'item_id', title: __('Item_id'), visible: false, searchList: itemList},
+                        {field: 'item_name', title: __('Item_id'), operate: false, formatter: function (value, row, index) {
+                            return itemList[row.item_id] || __('None');
+                        }},
                         {field: 'type', title: __('Type'), searchList: {"one_time":__('One_time'),"recurring":__('Recurring')}, formatter: Table.api.formatter.normal},
                         {field: 'currency', title: __('Currency')},
                         {field: 'one_time_price', title: __('One_time_price'), operate:'BETWEEN'},
@@ -38,7 +41,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'billing_day', title: __('Billing_day')},
                         {field: 'start_date', title: __('Start_date'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'end_date', title: __('End_date'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
-                        {field: 'default_payment_method_id', title: __('Default_payment_method_id')},
+                        {field: 'default_payment_method_id', title: __('Default_payment_method_id'), visible: false, searchList: paymentMethodList},
+                        {field: 'default_payment_method_name', title: __('Default_payment_method_id'), operate: false, formatter: function (value, row, index) {
+                            return paymentMethodList[row.default_payment_method_id] || __('None');
+                        }},
                         {field: 'created_at', title: __('Created_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'updated_at', title: __('Updated_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}

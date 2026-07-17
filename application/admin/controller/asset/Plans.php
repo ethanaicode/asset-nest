@@ -30,6 +30,14 @@ class Plans extends Backend
         $this->view->assign("billingCycleList", $this->model->getBillingCycleList());
         // 定义常用的货币列表，方便在表单中选择
         $this->view->assign("currencyList", config('asset.currency'));
+
+        $itemsModel = new \app\admin\model\asset\Items;
+        $itemList = $itemsModel->order('id', 'desc')->column('name', 'id');
+        $this->view->assign("itemList", json_encode($itemList, JSON_UNESCAPED_UNICODE));
+
+        $paymentmethodsModel = new \app\admin\model\asset\Paymentmethods;
+        $paymentMethodList = $paymentmethodsModel->order('id', 'desc')->column('name', 'id');
+        $this->view->assign("paymentMethodList", json_encode($paymentMethodList, JSON_UNESCAPED_UNICODE));
     }
 
 
