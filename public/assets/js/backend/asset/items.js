@@ -52,7 +52,85 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
         },
         api: {
             bindevent: function () {
-                Form.api.bindevent($("form[role=form]"));
+                var form = $("form[role=form]");
+                Form.api.bindevent(form);
+                Controller.api.bindPlanForm(form);
+            },
+            bindPlanForm: function (form) {
+                var hasPlanInput = form.find("#c-plan-has_plan");
+                var typeInput = form.find("#c-plan-type");
+                var cycleInput = form.find("#c-plan-billing_cycle");
+
+                if (!hasPlanInput.length || !typeInput.length || !cycleInput.length) {
+                    return;
+                }
+
+                var fields = {
+                    type: form.find('[data-plan-field="type"]'),
+                    currency: form.find('[data-plan-field="currency"]'),
+                    one_time_price: form.find('[data-plan-field="one_time_price"]'),
+                    purchase_date: form.find('[data-plan-field="purchase_date"]'),
+                    recurring_price: form.find('[data-plan-field="recurring_price"]'),
+                    billing_cycle: form.find('[data-plan-field="billing_cycle"]'),
+                    billing_day: form.find('[data-plan-field="billing_day"]'),
+                    start_date: form.find('[data-plan-field="start_date"]'),
+                    end_date: form.find('[data-plan-field="end_date"]'),
+                    default_payment_method_id: form.find('[data-plan-field="default_payment_method_id"]')
+                };
+
+                var toggleField = function (group, enabled, required) {
+                    if (!group || !group.length) {
+                        return;
+                    }
+                    var controls = group.find("input,select,textarea");
+                    group.toggle(enabled);
+                    controls.prop("disabled", !enabled);
+                    controls.removeAttr("data-rule");
+                    if (enabled && required) {
+                        controls.attr("data-rule", "required");
+                    }
+                    var picker = controls.filter(".selectpicker");
+                    if (picker.length && $.isFunction(picker.selectpicker)) {
+                        picker.selectpicker("refresh");
+                    }
+                };
+
+                var getTypeValue = function () {
+                    var value = typeInput.val();
+                    return (value === "recurring") ? "recurring" : "one_time";
+                };
+
+                var getCycleValue = function () {
+                    var value = cycleInput.val();
+                    return (value === "yearly") ? "yearly" : "monthly";
+                };
+
+                var updateFields = function () {
+                    var hasPlan = hasPlanInput.is(":checked");
+                    var type = getTypeValue();
+                    var cycle = getCycleValue();
+                    var isOneTime = type === "one_time";
+                    var isRecurring = type === "recurring";
+                    var isMonthlyRecurring = isRecurring && cycle === "monthly";
+
+                    toggleField(fields.type, hasPlan, true);
+                    toggleField(fields.currency, hasPlan, true);
+                    toggleField(fields.one_time_price, hasPlan && isOneTime, true);
+                    toggleField(fields.purchase_date, hasPlan && isOneTime, true);
+                    toggleField(fields.recurring_price, hasPlan && isRecurring, true);
+                    toggleField(fields.billing_cycle, hasPlan && isRecurring, true);
+                    toggleField(fields.billing_day, hasPlan && isMonthlyRecurring, true);
+                    toggleField(fields.start_date, hasPlan && isRecurring, true);
+                    toggleField(fields.end_date, hasPlan && isRecurring, true);
+                    toggleField(fields.default_payment_method_id, hasPlan, true);
+                };
+
+                hasPlanInput.on("change", updateFields);
+                typeInput.on("change changed.bs.select", updateFields);
+                cycleInput.on("change changed.bs.select", updateFields);
+
+                updateFields();
+                setTimeout(updateFields, 0);
             }
         }
     };
