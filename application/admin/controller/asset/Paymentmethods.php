@@ -23,10 +23,14 @@ class Paymentmethods extends Backend
         parent::_initialize();
         $this->model = new \app\admin\model\asset\Paymentmethods;
         $this->view->assign("typeList", $this->model->getTypeList());
+
         // 定义服务组织列表，方便在表单中选择
         $this->view->assign("providerList", config('asset.provider'));
+        $this->view->assign("providerListJson", json_encode(config('asset.provider'), JSON_UNESCAPED_UNICODE));
+
         // 定义常用的货币列表，方便在表单中选择
         $this->view->assign("currencyList", config('asset.currency'));
+        $this->view->assign("currencyListJson", json_encode(config('asset.currency'), JSON_UNESCAPED_UNICODE));
     }
 
 

@@ -30,7 +30,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'id', title: __('Id')},
                         {field: 'name', title: __('Name'), operate: 'LIKE'},
                         {field: 'type', title: __('Type'), searchList: {"credit_card":__('Credit_card'),"debit_card":__('Debit_card'),"cash":__('Cash'),"bank":__('Bank')}, formatter: Table.api.formatter.normal},
-                        {field: 'provider', title: __('Provider'), operate: 'LIKE'},
+                        {field: 'provider', title: __('Provider'), operate: 'LIKE', searchList: providerList, formatter: Table.api.formatter.normal}, 
                         {field: 'billing_day', title: __('Billing_day'), searchable: false, formatter: function(value, row, index) {
                             return value ? value + ' ' + __('Day') : '-';
                         }},
@@ -38,7 +38,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             return value ? value + ' ' + __('Day') : '-';
                         }},
                         {field: 'credit_limit', title: __('Credit_limit'), operate:'BETWEEN'},
-                        {field: 'currency', title: __('Currency')},
+                        {field: 'currency', title: __('Currency'), searchList: currencyList, formatter: Table.api.formatter.normal},
                         {field: 'is_active', title: __('Is_active'), searchList: {"1":__('Active'),"0":__('Inactive')}, formatter: Table.api.formatter.toggle},
                         {field: 'created_at', title: __('Created_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, searchable: false},
                         {field: 'updated_at', title: __('Updated_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false, searchable: false},
