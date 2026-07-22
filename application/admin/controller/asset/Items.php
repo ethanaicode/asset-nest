@@ -132,6 +132,20 @@ class Items extends Backend
         }
         unset($item);
 
+        // 重新按照账单日进行排序，如果没有账单日都放到后面去
+        usort($items, function ($a, $b) {
+            if ($a['next_billing_date'] === null && $b['next_billing_date'] === null) {
+                return 0;
+            }
+            if ($a['next_billing_date'] === null) {
+                return 1;
+            }
+            if ($b['next_billing_date'] === null) {
+                return -1;
+            }
+            return strcmp($a['next_billing_date'], $b['next_billing_date']);
+        });
+
         $result = ['total' => $list->total(), 'rows' => $items];
         return json($result);
     }
