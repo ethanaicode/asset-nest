@@ -28,12 +28,18 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'item_id', title: __('Item_id')},
+                        {field: 'item_id', title: __('Item_id'), visible: false, searchList: itemList},
+                        {field: 'item_name', title: __('Item_id'), operate: false, formatter: function (value, row, index) {
+                            return itemList[row.item_id] || __('None');
+                        }},
                         {field: 'plan_id', title: __('Plan_id')},
                         {field: 'amount', title: __('Amount'), operate:'BETWEEN'},
-                        {field: 'currency', title: __('Currency')},
+                        {field: 'currency', title: __('Currency'), searchList: currencyList, formatter: Table.api.formatter.normal},
                         {field: 'type', title: __('Type'), searchList: {"expense":__('Expense'),"income":__('Income'),"refund":__('Refund'),"transfer":__('Transfer')}, formatter: Table.api.formatter.normal},
-                        {field: 'payment_method_id', title: __('Payment_method_id')},
+                        {field: 'payment_method_id', title: __('payment_method_id'), visible: false, searchList: paymentMethodList},
+                        {field: 'default_payment_method_name', title: __('payment_method_id'), operate: false, formatter: function (value, row, index) {
+                            return paymentMethodList[row.payment_method_id] || __('None');
+                        }},
                         {field: 'transaction_date', title: __('Transaction_date'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'status', title: __('Status'), searchList: {"pending":__('Pending'),"success":__('Success'),"failed":__('Failed')}, formatter: Table.api.formatter.status},
                         {field: 'created_at', title: __('Created_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},

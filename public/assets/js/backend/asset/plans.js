@@ -33,7 +33,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             return itemList[row.item_id] || __('None');
                         }},
                         {field: 'type', title: __('Type'), searchList: {"one_time":__('One_time'),"recurring":__('Recurring')}, formatter: Table.api.formatter.normal},
-                        {field: 'currency', title: __('Currency')},
+                        {field: 'currency', title: __('Currency'), searchList: currencyList, formatter: Table.api.formatter.normal},
                         {field: 'one_time_price', title: __('One_time_price'), operate:'BETWEEN'},
                         {field: 'purchase_date', title: __('Purchase_date'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'recurring_price', title: __('Recurring_price'), operate:'BETWEEN'},

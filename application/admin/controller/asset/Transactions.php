@@ -23,7 +23,18 @@ class Transactions extends Backend
         parent::_initialize();
         $this->model = new \app\admin\model\asset\Transactions;
         $this->view->assign("typeList", $this->model->getTypeList());
-        $this->view->assign("statusList", $this->model->getStatusList());
+        
+        $this->view->assign("statusList", $this->model->getStatusList());        
+        // 定义常用的货币列表，方便在表单中选择
+        $this->view->assign("currencyListJson", json_encode(config('asset.currency'), JSON_UNESCAPED_UNICODE));
+
+        $itemsModel = new \app\admin\model\asset\Items;
+        $itemList = $itemsModel->order('id', 'desc')->column('name', 'id');
+        $this->view->assign("itemListJson", json_encode($itemList, JSON_UNESCAPED_UNICODE));
+
+        $paymentmethodsModel = new \app\admin\model\asset\Paymentmethods;
+        $paymentMethodList = $paymentmethodsModel->order('id', 'desc')->column('name', 'id');
+        $this->view->assign("paymentMethodListJson", json_encode($paymentMethodList, JSON_UNESCAPED_UNICODE));
     }
 
 

@@ -30,6 +30,7 @@ class Plans extends Backend
         $this->view->assign("billingCycleList", $this->model->getBillingCycleList());
         // 定义常用的货币列表，方便在表单中选择
         $this->view->assign("currencyList", config('asset.currency'));
+        $this->view->assign("currencyListJson", json_encode(config('asset.currency'), JSON_UNESCAPED_UNICODE));
 
         $itemsModel = new \app\admin\model\asset\Items;
         $itemList = $itemsModel->order('id', 'desc')->column('name', 'id');
@@ -50,12 +51,127 @@ class Plans extends Backend
      */
 
     /**
-     * Selectpage搜索
+     * Selectpage搜索 - 为每个 plan 生成可读的显示标签
      *
      * @internal
      */
     public function selectpage()
     {
-        return parent::selectpage();
+        $this->request->filter(['trim', 'strip_tags', 'htmlspecialchars']);
+
+        $word = (array)$this->request->request("q_word/a");
+        $page = $this->request->request("pageNumber");
+        $pagesize = $this->request->request("pageSize");
+        $andor = $this->request->request("andOr", "and", "strtoupper");
+        $orderby = (array)$this->request->request("orderBy/a");
+        $field = $this->request->request("showField");
+        $primarykey = $this->request->request("keyField");
+        $primaryvalue = $this->request->request("keyValue");
+        $searchfield = (array)$this->request->request("searchField/a");
+        $custom = (array)$this->request->request("custom/a");
+        $istree = $this->request->request("isTree", 0);
+
+        if ($istree) {
+            $word = [];
+            $pagesize = 999999;
+        }
+
+        $order = [];
+        foreach ($orderby as $k => $v) {
+            $order[$v[0]] = $v[1];
+        }
+        $field = $field ? $field : 'id';
+
+        // 构建 where 条件
+        if ($primaryvalue !== null) {
+            $where = ['id' => ['in', $primaryvalue]];
+            $pagesize = 999999;
+        } else {
+            $where = function ($query) use ($word, $andor, $searchfield, $custom) {
+                // Plans 通过 item.name 或 item.id、type、price 来搜索
+                $logic = $andor == 'AND' ? '&' : '|';
+                $word = array_filter(array_unique($word));
+
+                if (count($word) > 0) {
+                    $query->where(function ($query) use ($word, $logic) {
+                        foreach ($word as $idx => $item) {
+                            $op = ($idx === 0) ? 'where' : 'whereOr';
+                            $query->{$op}(function ($q) use ($item) {
+                                // 支持按 item 名称、plan 类型、价格搜索
+                                $q->whereIn('item_id', function ($subQ) use ($item) {
+                                    $subQ->name('asset_items')
+                                        ->where('name', 'like', "%{$item}%")
+                                        ->field('id');
+                                })
+                                ->whereOr('type', 'like', "%{$item}%")
+                                ->whereOr('currency', '=', strtoupper($item))
+                                ->whereOr('recurring_price', '=', $item)
+                                ->whereOr('one_time_price', '=', $item);
+                            });
+                        }
+                    });
+                }
+
+                if ($custom && is_array($custom)) {
+                    foreach ($custom as $k => $v) {
+                        if (is_array($v) && 2 == count($v)) {
+                            $query->where($k, trim($v[0]), $v[1]);
+                        } else {
+                            $query->where($k, '=', $v);
+                        }
+                    }
+                }
+            };
+        }
+
+        $list = [];
+        $total = $this->model->where($where)->count();
+        if ($total > 0) {
+            // Plans 表没有 name 字段，如果 order 中包含 name 则改为按 id 排序
+            if (!empty($order)) {
+                if (isset($order['name'])) {
+                    $order['id'] = $order['name'];
+                    unset($order['name']);
+                }
+                if (!empty($order)) {
+                    $this->model->order($order);
+                }
+            }
+
+            $datalist = $this->model->where($where)
+                ->page($page, $pagesize)
+                ->select();
+
+            // 从 items 表获取关联的项目名称
+            $itemIds = array_unique(array_filter(array_column($datalist, 'item_id')));
+            $itemNames = [];
+            if ($itemIds) {
+                $itemNames = \think\Db::name('asset_items')
+                    ->whereIn('id', $itemIds)
+                    ->column('name', 'id');
+            }
+
+            foreach ($datalist as $index => $item) {
+                $itemName = $itemNames[$item['item_id']] ?? '(Unknown)';
+                $typeText = $this->model->getTypeList()[$item['type']] ?? $item['type'];
+                
+                // 生成可读的显示标签
+                if ($item['type'] === 'one_time') {
+                    $displayLabel = "{$itemName} - {$typeText} ({$item['currency']} {$item['one_time_price']})";
+                } else {
+                    $cycleText = ($item['billing_cycle'] === 'yearly') ? '年' : '月';
+                    $displayLabel = "{$itemName} - {$typeText}({$cycleText}) ({$item['currency']} {$item['recurring_price']}/{$cycleText})";
+                }
+
+                $result = [
+                    'id'   => $item['id'],
+                    'name' => $displayLabel,
+                ];
+                $result = array_map("htmlentities", $result);
+                $list[] = $result;
+            }
+        }
+
+        return json(['total' => $total, 'list' => $list]);
     }
 }
