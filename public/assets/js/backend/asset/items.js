@@ -2,6 +2,14 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
 
     var Controller = {
         index: function () {
+            // 构建 categoryList 的查找 Map（保持原顺序）
+            var categoryListMap = {};
+            if (Array.isArray(categoryList)) {
+                categoryList.forEach(function(cat) {
+                    categoryListMap[cat.id] = cat.name;
+                });
+            }
+            
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
@@ -26,10 +34,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'category_id', title: __('Category_id'), visible: false, searchList: categoryList},
+                        {field: 'category_id', title: __('Category_id'), visible: false, searchList: categoryListMap},
                         {field: 'category_name', title: __('Category_name'), operate: false, formatter: function(value, row, index) {
                             // 通过 category_id 映射显示分类名称，如果是0则显示 None
-                            return categoryList[row.category_id] || __('None');
+                            return categoryListMap[row.category_id] || __('None');
                         }},
                         {field: 'name', title: __('Name'), operate: 'LIKE', table: table, class: 'autocontent', formatter: Table.api.formatter.content},
                         {field: 'cover_url', title: __('Cover_url'), events: Table.api.events.image, formatter: Table.api.formatter.image, operate: false},

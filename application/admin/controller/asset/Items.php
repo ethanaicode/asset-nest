@@ -4,6 +4,7 @@ namespace app\admin\controller\asset;
 
 use app\common\controller\Backend;
 use Exception;
+use fast\Tree;
 use think\Db;
 use think\exception\DbException;
 use think\exception\PDOException;
@@ -33,7 +34,24 @@ class Items extends Backend
         $this->model = new \app\admin\model\asset\Items;
         $this->view->assign("typeList", $this->model->getTypeList());
         $categoriesModel = new \app\admin\model\asset\Categories;
-        $categoryList = $categoriesModel->where('parent_id', 0)->column('name', 'id');
+        $categoryRows = $categoriesModel->field('name,id,parent_id')->select();
+        $tree = Tree::instance();
+        $tree->init($categoryRows, 'parent_id');
+        $treeList = $tree->getTreeList($tree->getTreeArray(0), 'name');
+        
+        // 从 getTreeList 返回的 JSON 字符串数组重建格式化的分类列表（保留原顺序）
+        $categoryList = [];
+        foreach ($treeList as $item) {
+            $item = str_replace('&nbsp;', ' ', $item);
+            $decoded = json_decode($item, true);
+            if ($decoded && isset($decoded['id'], $decoded['name'])) {
+                $categoryList[] = [
+                    'id' => (int)$decoded['id'],
+                    'name' => trim($decoded['name'])
+                ];
+            }
+        }
+        
         $this->view->assign("categoryList", json_encode($categoryList, JSON_UNESCAPED_UNICODE));
 
         $plansModel = new \app\admin\model\asset\Plans;
