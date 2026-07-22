@@ -22,4 +22,8 @@ return [
     "Service" => "软件服务",
     "Asset" => "实物资产",
     "Account" => "账户",
+    "Plan type" => "付费方式",
+    "One time" => "单次付费",
+    "Price" => "费用",
+    "Next billing date" => "下次账单日",
 ];

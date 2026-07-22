@@ -55,6 +55,118 @@ class Items extends Backend
      */
 
     /**
+     * 列表
+     */
+    public function index()
+    {
+        $this->request->filter(['strip_tags', 'trim']);
+        if (false === $this->request->isAjax()) {
+            return $this->view->fetch();
+        }
+        if ($this->request->request('keyField')) {
+            return $this->selectpage();
+        }
+
+        [$where, $sort, $order, $offset, $limit] = $this->buildparams();
+
+        $list = $this->model
+            ->where($where)
+            ->order($sort, $order)
+            ->paginate($limit);
+
+        // 转为数组并挂载 plan 数据
+        $items = array_map(function ($item) { return $item->toArray(); }, $list->items());
+
+        $itemIds = array_filter(array_column($items, 'id'));
+        $plans = [];
+        if ($itemIds) {
+            $planRows = Db::name('asset_plans')
+                ->whereIn('item_id', $itemIds)
+                ->select();
+            foreach ($planRows as $plan) {
+                $plans[$plan['item_id']] = $plan;
+            }
+        }
+
+        $today = date('Y-m-d');
+        $todayTs = strtotime($today);
+
+        foreach ($items as &$item) {
+            $plan = $plans[$item['id']] ?? null;
+            if ($plan) {
+                $item['plan_type']          = $plan['type'];
+                $item['plan_currency']      = $plan['currency'];
+                $item['plan_billing_cycle'] = $plan['billing_cycle'] ?: null;
+                if ($plan['type'] === 'one_time') {
+                    $item['plan_price']         = $plan['one_time_price'];
+                    $item['next_billing_date']  = null;
+                } else {
+                    $item['plan_price']         = $plan['recurring_price'];
+                    $item['next_billing_date']  = $this->calcNextBillingDate($plan, $todayTs);
+                }
+            } else {
+                $item['plan_type']          = null;
+                $item['plan_currency']      = null;
+                $item['plan_price']         = null;
+                $item['plan_billing_cycle'] = null;
+                $item['next_billing_date']  = null;
+            }
+        }
+        unset($item);
+
+        $result = ['total' => $list->total(), 'rows' => $items];
+        return json($result);
+    }
+
+    /**
+     * 根据 plan 数据计算下次账单日
+     *
+     * @param array $plan
+     * @param int   $todayTs
+     * @return string|null
+     */
+    protected function calcNextBillingDate(array $plan, int $todayTs): ?string
+    {
+        if ($plan['billing_cycle'] === 'monthly') {
+            $billingDay = (int)$plan['billing_day'];
+            if ($billingDay < 1) {
+                return null;
+            }
+            $year  = (int)date('Y');
+            $month = (int)date('m');
+
+            $day = min($billingDay, (int)date('t', mktime(0, 0, 0, $month, 1, $year)));
+            $thisTs = mktime(0, 0, 0, $month, $day, $year);
+            if ($thisTs >= $todayTs) {
+                return date('Y-m-d', $thisTs);
+            }
+
+            $nextMonth = $month === 12 ? 1 : $month + 1;
+            $nextYear  = $month === 12 ? $year + 1 : $year;
+            $day = min($billingDay, (int)date('t', mktime(0, 0, 0, $nextMonth, 1, $nextYear)));
+            return date('Y-m-d', mktime(0, 0, 0, $nextMonth, $day, $nextYear));
+        }
+
+        if ($plan['billing_cycle'] === 'yearly') {
+            if (empty($plan['start_date'])) {
+                return null;
+            }
+            $startTs    = strtotime($plan['start_date']);
+            $startMonth = (int)date('m', $startTs);
+            $startDay   = (int)date('d', $startTs);
+            $curYear    = (int)date('Y');
+
+            $thisYearTs = mktime(0, 0, 0, $startMonth, $startDay, $curYear);
+            if ($thisYearTs >= $todayTs) {
+                return date('Y-m-d', $thisYearTs);
+            }
+            return date('Y-m-d', mktime(0, 0, 0, $startMonth, $startDay, $curYear + 1));
+        }
+
+        return null;
+    }
+
+    /**
      * 添加
      *
      * @return string

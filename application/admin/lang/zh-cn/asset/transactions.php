@@ -1,7 +1,7 @@
 <?php
 
 return [
-    "Plan_id" => "交易信息",
+    "Plan_id" => "支付计划",
     "Payment_method_id" => "支付方式",
     "Transaction_date" => "交易日期",
     "Expense" => "支出",

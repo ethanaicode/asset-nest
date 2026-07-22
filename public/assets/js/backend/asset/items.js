@@ -34,6 +34,22 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'name', title: __('Name'), operate: 'LIKE', table: table, class: 'autocontent', formatter: Table.api.formatter.content},
                         {field: 'cover_url', title: __('Cover_url'), events: Table.api.events.image, formatter: Table.api.formatter.image, operate: false},
                         {field: 'type', title: __('Type'), searchList: {"service":__('Service'),"asset":__('Asset'),"account":__('Account')}, formatter: Table.api.formatter.normal},
+                        {field: 'plan_type', title: __('Plan type'), operate: false, formatter: function(value, row) {
+                            if (!value) return '<span class="text-muted">-</span>';
+                            if (value === 'one_time') {
+                                return '<span class="label label-default">' + __('One time') + '</span>';
+                            }
+                            var cycleLabel = row.plan_billing_cycle === 'yearly' ? __('Yearly') : __('Monthly');
+                            return '<span class="label label-info">' + __('Recurring') + ' · ' + cycleLabel + '</span>';
+                        }},
+                        {field: 'plan_price', title: __('Price'), operate: false, formatter: function(value, row) {
+                            if (value === null || value === undefined || value === '') return '<span class="text-muted">-</span>';
+                            return (row.plan_currency || '') + ' ' + parseFloat(value).toFixed(2);
+                        }},
+                        {field: 'next_billing_date', title: __('Next billing date'), operate: false, formatter: function(value, row) {
+                            if (!value) return '<span class="text-muted">-</span>';
+                            return value;
+                        }},
                         {field: 'created_at', title: __('Created_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'updated_at', title: __('Updated_at'), operate:'RANGE', addclass:'datetimerange', autocomplete:false},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
