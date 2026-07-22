@@ -40,6 +40,10 @@ class Items extends Backend
         $this->view->assign("planTypeList", $plansModel->getTypeList());
         $this->view->assign("billingCycleList", $plansModel->getBillingCycleList());
         $this->view->assign("currencyList", (array)config('asset.currency'));
+
+        $paymentmethodsModel = new \app\admin\model\asset\Paymentmethods;
+        $paymentMethodList = $paymentmethodsModel->order('id', 'desc')->column('name', 'id');
+        $this->view->assign("paymentMethodList", $paymentMethodList);
     }
 
 

@@ -33,11 +33,12 @@ class Plans extends Backend
 
         $itemsModel = new \app\admin\model\asset\Items;
         $itemList = $itemsModel->order('id', 'desc')->column('name', 'id');
-        $this->view->assign("itemList", json_encode($itemList, JSON_UNESCAPED_UNICODE));
+        $this->view->assign("itemListJson", json_encode($itemList, JSON_UNESCAPED_UNICODE));
 
         $paymentmethodsModel = new \app\admin\model\asset\Paymentmethods;
         $paymentMethodList = $paymentmethodsModel->order('id', 'desc')->column('name', 'id');
-        $this->view->assign("paymentMethodList", json_encode($paymentMethodList, JSON_UNESCAPED_UNICODE));
+        $this->view->assign("paymentMethodList", $paymentMethodList);
+        $this->view->assign("paymentMethodListJson", json_encode($paymentMethodList, JSON_UNESCAPED_UNICODE));
     }
 
 

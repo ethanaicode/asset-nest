@@ -44,10 +44,6 @@ class Paymentmethods extends Backend
      */
     public function selectpage()
     {
-        $where = [
-            'is_active' => 1
-        ];
-        $list = $this->model->where($where)->field('id,name')->select();
-        return json(['list' => $list]);
+        return parent::selectpage();
     }
 }
